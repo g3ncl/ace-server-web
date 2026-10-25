@@ -1,0 +1,80 @@
+.navHeader {
+  margin-bottom: 2rem;
+}
+
+.title {
+  color: var(--mantin);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.link,
+.mobileLink {
+  text-decoration: none;
+  color: inherit;
+  width: 9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.link {
+  width: 100%;
+}
+
+.linkText {
+  font-weight: 500;
+}
+
+.nav .navButton {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--mantine-color-text);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav .navButton:hover {
+  background-color: var(--mantine-primary-color-light);
+}
+
+.nav .activeNavButton,
+.mobileNav .activeNavButton {
+  background-color: var(--mantine-primary-color-filled);
+  color: var(--mantine-color-white);
+}
+
+.nav .activeNavButton:hover,
+.mobileNav .activeNavButton:hover {
+  background-color: var(--mantine-primary-color-filled-hover);
+}
+.mobileNav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+.mobileNav .mobileNavButton {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+/* Fit the additional EVO tools in the mobile footer. */
+.mobileLink { width: 20%; min-width: 0; }
+.mobileNav .mobileNavButton { padding-inline: 4px; }
+.mobileNavButton .linkText { font-size: 0.65rem; }

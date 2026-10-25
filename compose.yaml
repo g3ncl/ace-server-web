@@ -1,0 +1,21 @@
+services:
+  ace-server-web:
+    build: .
+    image: ace-server-web:local
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      ACE_WEB_HOST: ${ACE_WEB_HOST:-127.0.0.1}
+      PORT: ${WEB_PORT:-3000}
+      ACE_WEB_USER: ${ACE_WEB_USER:-admin}
+      ACE_WEB_PASSWORD: ${ACE_WEB_PASSWORD:-}
+      ACE_AUTO_START: ${ACE_AUTO_START:-false}
+    volumes:
+      - "${ACE_SERVER_DIR:?Set ACE_SERVER_DIR in .env}:/server:ro"
+      - ace-data:/data
+    # The Steam installation keeps its existing SELinux labels on Fedora.
+    security_opt:
+      - label=disable
+    stop_grace_period: 20s
+volumes:
+  ace-data:
