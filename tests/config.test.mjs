@@ -23,6 +23,18 @@ const catalog = {
     },
   ],
 };
+test("CPU emulation defaults off and remains optional for older configurations", () => {
+  const config = defaultConfig();
+  assert.equal(config.runtime.cpuEmulation, false);
+  delete config.runtime.cpuEmulation;
+  assert.doesNotThrow(() => validateConfig(config, catalog));
+  config.runtime.cpuEmulation = true;
+  assert.doesNotThrow(() => validateConfig(config, catalog));
+  for (const invalid of ["true", "false", 0, 1, null, {}]) {
+    config.runtime.cpuEmulation = invalid;
+    assert.throws(() => validateConfig(config, catalog), /CPU emulation/);
+  }
+});
 test("validates native EVO event selection and rejects mismatched catalogs", () => {
   assert.doesNotThrow(() => validateConfig(defaultConfig(), catalog));
   for (const mutate of [

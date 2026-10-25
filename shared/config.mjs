@@ -15,7 +15,7 @@ export const sessions = ["practice", "qualify", "warmup", "race"];
 export function defaultConfig() {
   return {
     version: 1,
-    runtime: { registerLobby: false, carSelection: "selected" },
+    runtime: { registerLobby: false, carSelection: "selected", cpuEmulation: false },
     server: {
       server_name: "AC EVO Server",
       server_tcp_listener_port: 9700,
@@ -105,6 +105,10 @@ export function validateConfig(config, catalog) {
   requireValue(
     typeof r.registerLobby === "boolean",
     "Lobby registration must be a boolean",
+  );
+  requireValue(
+    r.cpuEmulation === undefined || typeof r.cpuEmulation === "boolean",
+    "CPU emulation must be a boolean",
   );
   choice(carSelectionMode(config), ["selected", "all"], "Car selection mode");
   requireValue(

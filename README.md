@@ -42,6 +42,8 @@ For rootless Podman, replace `docker` with `podman`. Build with `podman build --
 
 Edit settings in the web UI, then restart EVO through the Status page to apply them. The configuration uses EVO's own format; ACC configuration files cannot be imported.
 
+For CPUs without AVX support, turn on **Enable CPU emulation** under Configuration > Server, save, and restart EVO. This option is off by default and runs the server through QEMU. Expect higher CPU usage and lower performance than on a CPU with native AVX support.
+
 You can configure practice events or race weekends, select tracks and sessions, and choose allowed cars. All installed cars includes the current catalog at each start. The car editor has search, filters and pagination for adjusting ballast and restrictors.
 
 The panel also supports configuration import/export, logs, a local entry list, and result downloads. Leave Entry-list server URL and Results POST URL blank unless you use external services for those features.

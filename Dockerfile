@@ -19,7 +19,7 @@ RUN npm run build
 
 FROM docker.io/library/ubuntu:24.04 AS runtime
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wine wine64 xvfb xauth tini ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends wine wine64 qemu-user xvfb xauth tini ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m -u 1001 appuser \
     && mkdir -p /data /server && chown appuser:appuser /data /server

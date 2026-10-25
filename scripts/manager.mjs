@@ -231,8 +231,16 @@ async function start() {
     "-write_server_results",
   ];
   if (!config.runtime.registerLobby) args.push("-no_lobby");
+  const emulation = config.runtime.cpuEmulation === true;
+  const wine =
+    process.env.ACE_WINE_BIN || (emulation ? "/usr/lib/wine/wine64" : "wine");
+  const command = emulation
+    ? process.env.ACE_QEMU_BIN || "/usr/bin/qemu-x86_64"
+    : wine;
+  const launchArgs = emulation ? ["-cpu", "max", wine, ...args] : args;
+  if (emulation) log("[manager] CPU emulation enabled (QEMU)\n");
   // No shell interpolation, no broad process-name kills. Each instance owns its process group and Wine prefix.
-  const proc = spawn(process.env.ACE_WINE_BIN || "wine", args, {
+  const proc = spawn(command, launchArgs, {
     cwd: serverDir,
     detached: true,
     stdio: ["ignore", "pipe", "pipe"],
@@ -242,6 +250,8 @@ async function start() {
       WINEARCH: "win64",
       WINEDEBUG: process.env.WINEDEBUG || "-all",
       WINEDLLOVERRIDES: "mscoree,mshtml=;winemenubuilder.exe=d",
+      // Keep Wine's loader inside QEMU instead of re-executing it natively.
+      ...(emulation ? { WINELOADERNOEXEC: "1" } : {}),
     },
   });
   child = proc;
@@ -289,20 +299,21 @@ async function start() {
       activeConfig = null;
     }
   });
+  const startupSeconds = emulation ? 180 : 90;
   startupTimer = setTimeout(async () => {
     if (
       child === proc &&
       !(await portOpen(config.server.server_tcp_internal_port))
     ) {
-      log("[manager] Startup timed out after 90 seconds\n");
+      log(`[manager] Startup timed out after ${startupSeconds} seconds\n`);
       await stop();
       state = "failed";
       lastExit = {
-        error: "Startup timed out after 90 seconds",
+        error: `Startup timed out after ${startupSeconds} seconds`,
         at: new Date().toISOString(),
       };
     }
-  }, 90000);
+  }, startupSeconds * 1000);
   startupTimer.unref();
   await new Promise((resolve) => setTimeout(resolve, 300));
   if (state === "failed")

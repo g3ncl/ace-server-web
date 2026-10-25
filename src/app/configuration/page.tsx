@@ -292,6 +292,20 @@ export default function ConfigurationPage() {
                         }
                       />
                       <Switch
+                        label="Enable CPU emulation"
+                        description="For CPUs without AVX support. Increases CPU usage and can reduce performance. Save and restart EVO to apply."
+                        checked={config.runtime.cpuEmulation ?? false}
+                        onChange={(e) =>
+                          edit({
+                            ...config,
+                            runtime: {
+                              ...config.runtime,
+                              cpuEmulation: e.currentTarget.checked,
+                            },
+                          })
+                        }
+                      />
+                      <Switch
                         label="Register in the public EVO lobby"
                         description="Enable when the game and HTTP ports are reachable by players."
                         checked={config.runtime.registerLobby}

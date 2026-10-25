@@ -49,9 +49,26 @@ process.on('SIGTERM', () => server.close(() => process.exit(0)));
 `,
     { mode: 0o700 },
   );
+  const fakeQemu = path.join(root, "fake-qemu");
+  const qemuLaunch = path.join(root, "qemu-launch.json");
+  await fs.writeFile(
+    fakeQemu,
+    `#!/usr/bin/env node
+const fs = require('fs'), { spawn } = require('child_process');
+const args = process.argv.slice(2);
+fs.writeFileSync(${JSON.stringify(qemuLaunch)}, JSON.stringify({
+  args, loaderNoExec: process.env.WINELOADERNOEXEC, prefix: process.env.WINEPREFIX
+}));
+const child = spawn(args[2], args.slice(3), { stdio: 'inherit' });
+process.on('SIGTERM', () => {});
+child.on('exit', code => process.exit(code ?? 1));
+`,
+    { mode: 0o700 },
+  );
   process.env.ACE_DATA_DIR = dataDir;
   process.env.ACE_SERVER_DIR = serverDir;
   process.env.ACE_WINE_BIN = fake;
+  process.env.ACE_QEMU_BIN = fakeQemu;
   const { createManager } = await import("../scripts/manager.mjs");
   const close = await createManager();
   const call = (route, data) =>
@@ -95,6 +112,7 @@ process.on('SIGTERM', () => server.close(() => process.exit(0)));
   }
   try {
     const config = (await call("config")).data;
+    assert.equal(config.runtime.cpuEmulation, false);
     const port = await freePort();
     for (const key of [
       "server_tcp_listener_port",
@@ -235,6 +253,30 @@ process.on('SIGTERM', () => server.close(() => process.exit(0)));
       3,
       "restart reloads new catalog cars",
     );
+    config.runtime.cpuEmulation = true;
+    assert.equal((await call("config", config)).data.restartRequired, true);
+    assert.equal((await call("status")).data.pendingChanges, true);
+    await assert.rejects(fs.access(qemuLaunch), { code: "ENOENT" });
+    await call("restart", {});
+    await waitForState("running");
+    const launch = JSON.parse(await fs.readFile(qemuLaunch, "utf8"));
+    assert.deepEqual(launch.args.slice(0, 3), ["-cpu", "max", fake]);
+    assert.equal(launch.args[3], path.join(serverDir, "AssettoCorsaEVOServer.exe"));
+    assert.equal(launch.loaderNoExec, "1");
+    assert.equal(launch.prefix, path.join(dataDir, "wine"));
+    assert.equal((await call("config")).data.runtime.cpuEmulation, true);
+    assert.equal((await call("status")).data.pendingChanges, false);
+    native = JSON.parse(
+      await fs.readFile(path.join(dataDir, "run", "server.json"), "utf8"),
+    );
+    assert.ok(!("cpuEmulation" in native), "emulation is not an EVO server setting");
+    assert.ok((await call("logs")).data.text.includes("CPU emulation enabled"));
+    await fs.unlink(qemuLaunch);
+    config.runtime.cpuEmulation = false;
+    await call("config", config);
+    await call("restart", {});
+    await waitForState("running");
+    await assert.rejects(fs.access(qemuLaunch), { code: "ENOENT" });
     await call("stop", {});
     config.server.server_name = "FAIL";
     await call("config", config);

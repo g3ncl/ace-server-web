@@ -22,7 +22,11 @@ export type Time = {
 };
 export type Config = {
   version: number;
-  runtime: { registerLobby: boolean; carSelection?: "all" | "selected" };
+  runtime: {
+    registerLobby: boolean;
+    carSelection?: "all" | "selected";
+    cpuEmulation?: boolean;
+  };
   server: {
     server_name: string;
     server_tcp_listener_port: number;
