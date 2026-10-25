@@ -2,7 +2,9 @@
 
 ace-server-web packages an Assetto Corsa EVO dedicated server running under Wine alongside a Next.js web application. The web UI lets you edit server settings, check server status, and start, stop or restart the server.
 
-Based on [acc-server-web](https://github.com/g3ncl/acc-server-web), with EVO-specific configuration. The web UI uses Mantine v7.
+For the Assetto Corsa Competizione version, see [acc-server-web](https://github.com/g3ncl/acc-server-web).
+
+Based on acc-server-web, with EVO-specific configuration. The web UI uses Mantine v7.
 
 ## Getting started
 
