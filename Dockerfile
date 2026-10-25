@@ -1,3 +1,14 @@
+# Pin the dedicated-server build so every image includes verified game files.
+FROM docker.io/library/ubuntu:24.04 AS server-files
+ARG ACE_SERVER_ARCHIVE_URL=https://github.com/g3ncl/ace-server-web/releases/download/0.1.0/ace-dedicated-server-24991735.tar.gz
+ARG ACE_SERVER_ARCHIVE_SHA256=f9583dced9b0a27406c2d8da8dea6b28909f0e46225735f68281b568ae200be1
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+    && curl --fail --location --retry 3 "$ACE_SERVER_ARCHIVE_URL" -o /tmp/server.tar.gz \
+    && printf '%s  /tmp/server.tar.gz\n' "$ACE_SERVER_ARCHIVE_SHA256" | sha256sum -c - \
+    && mkdir -p /server && tar --extract --gzip --no-same-owner --file /tmp/server.tar.gz --directory /server \
+    && test -s /server/AssettoCorsaEVOServer.exe && test -s /server/content.kspkg \
+    && test -s /server/cars.json && test -s /server/events_practice.json && test -s /server/events_race_weekend.json
+
 FROM docker.io/library/node:22-bookworm-slim AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -17,6 +28,7 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 \
     ACE_NEXT_SERVER=/app/server.js DISPLAY=:99 WINEDEBUG=-all WINEARCH=win64 \
     WINEDLLOVERRIDES="mscoree,mshtml=;winemenubuilder.exe=d"
 WORKDIR /app
+COPY --from=server-files --chown=appuser:appuser /server /server
 COPY --from=build /usr/local/bin/node /usr/local/bin/node
 COPY --from=build --chown=appuser:appuser /app/.next/standalone ./
 COPY --from=build --chown=appuser:appuser /app/.next/static ./.next/static

@@ -11,7 +11,6 @@ Based on acc-server-web, with EVO-specific configuration. The web UI uses Mantin
 ### Prerequisites
 
 - A Linux host with Docker or Podman.
-- The Assetto Corsa EVO Dedicated Server tool installed through Steam. The game server files are mounted into the container and are not included in the image.
 
 ### Building and running
 
@@ -21,25 +20,23 @@ From the project directory, build the image:
 docker build -t ace-server-web .
 ```
 
-Run the container, replacing the server path with your Steam installation folder:
+The image includes the EVO dedicated server. Run the container:
 
 ```sh
 docker run -d --name ace-server-web \
   --restart unless-stopped \
   --network host \
-  --security-opt label=disable \
-  -v "/path/to/Assetto Corsa EVO Dedicated Server:/server:ro" \
   -v ace-data:/data \
   ace-server-web
 ```
 
-The server folder must contain `AssettoCorsaEVOServer.exe` and its content files. The `ace-data` volume stores settings, backups, results and the Wine prefix, and survives container replacement.
+The `ace-data` volume stores settings, backups, results and the Wine prefix, and survives container replacement.
 
 Open http://localhost:3000. Configure the server, save, and click Start on the Status page. EVO is stopped by default when the container starts; add `-e ACE_AUTO_START=true` to enable automatic startup.
 
 Keep the administration panel private. It binds to `127.0.0.1` by default. For remote access, use an SSH tunnel or an authenticated HTTPS reverse proxy. Set `ACE_WEB_PASSWORD` to enable HTTP Basic authentication; `ACE_WEB_USER` defaults to `admin`.
 
-For rootless Podman, replace `docker` with `podman`. Build with `podman build --format docker -t ace-server-web .`. The `label=disable` option allows access to the Steam files on Fedora without relabeling the installation.
+For rootless Podman, replace `docker` with `podman`. Build with `podman build --format docker -t ace-server-web .`. No Steam-folder mount is required.
 
 ## Configuration
 
@@ -71,7 +68,7 @@ The repository includes `compose.yaml`. Copy the example environment file:
 cp .env.example .env
 ```
 
-Set `ACE_SERVER_DIR` in `.env` to the installed server folder, then run:
+Then run:
 
 ```sh
 docker compose up --build -d

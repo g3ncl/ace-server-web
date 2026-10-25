@@ -101,3 +101,10 @@ Read-only Chromium checks at 1440 × 1000 and 390 × 844 verified visible card d
 
 
 The updated image `45e897728ecb` was subsequently deployed to the port-3000 container. The saved configuration compared equal before and after replacement. EVO returned to running state with no pending changes, TCP/UDP 22700 and HTTP 22800. The manager health check passed, both TCP listeners responded, the EVO HTTP endpoint returned 200, and read-only Chromium checks passed against the deployed status card at desktop and mobile sizes. The previous container is retained stopped as `ace-server-web-previous` for rollback.
+
+
+## Bundled dedicated-server image
+
+The image now includes Steam app 4564210, build 24991735, under `/server`. The build downloads a pinned archive and checks its SHA-256 before copying the game files into the runtime stage. The executable, content package, native libraries and car/event catalogs are included. Default Compose deployments mount only `/data`.
+
+An isolated rootless Podman test started the actual EVO server from this image without a Steam directory or `/server` bind mount. It verified all 100 cars, both event catalogs, running state, game TCP/UDP 22710, an HTTP response on 22810, clean stop and container health. The current production configuration was unchanged. The test used a separate Xvfb display because the existing host-networked instance already occupied display 99. The isolated container and data volume were removed after validation.
