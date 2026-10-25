@@ -1,8 +1,6 @@
-name: Create and publish a Docker image
+name: Publish an existing release image
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
@@ -22,13 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.sha }}
+          ref: refs/tags/${{ inputs.tag }}
       - uses: actions/setup-node@v4
-        if: github.event_name == 'workflow_dispatch'
         with:
           node-version: 22
       - name: Verify release version
-        if: github.event_name == 'workflow_dispatch'
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: node -e 'if (require("./package.json").version !== process.env.RELEASE_TAG) throw new Error("Tag must match the package version")'
@@ -43,10 +39,9 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=main,enable=${{ github.event_name == 'push' }}
-            type=semver,pattern={{version}},value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=semver,pattern={{version}},value=${{ inputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
+            type=raw,value=latest
       - uses: docker/build-push-action@v6
         with:
           context: .
