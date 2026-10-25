@@ -82,6 +82,18 @@ docker compose logs -f
 docker compose down
 ```
 
+## Releases
+
+Push Conventional Commits to `main`. After lint, type checks, tests and the production build pass, the [Semantic Release Action](https://github.com/cycjimmy/semantic-release-action) creates releases directly, without pull requests.
+
+`fix:` creates a patch release, `feat:` a minor release, and `feat!:` or `fix!:` a major release. Documentation and CI changes alone do not trigger a release. Keep commit subjects under 100 characters, with no body.
+
+Releases update the package version, lockfile and changelog, then publish a GitHub release and GHCR images tagged with the full version, major/minor version and `latest`. Development images use `main`. The header displays the package version used to build the panel.
+
+The initial version is tagged `0.1.0`. Include that tag when pushing this repository to GitHub so releases continue from the existing version.
+
+The workflows use the built-in `GITHUB_TOKEN`. Allow it to write repository contents and packages, and allow the release bot to push version commits to `main`. Pull the bot's commit before your next push. Nothing is published to npm.
+
 ## Contributing
 
 Contributions are welcome. Please submit a pull request with a description of the change.

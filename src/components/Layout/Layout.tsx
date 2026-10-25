@@ -6,7 +6,7 @@ import { Settings, Medal, ScrollText, ListOrdered, ChevronsLeftRightEllipsis } f
 import styles from "./Layout.module.css";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 
-const version = "0.1.0";
+const version = process.env.version;
 
 const navItems = [
   { icon: ChevronsLeftRightEllipsis, label: "Status", href: "/status" },
